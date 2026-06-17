@@ -61,7 +61,11 @@
 - **统计图**：纯 CSS 条形图，宽度由服务端按数据算出百分比，无图表库。
 
 ### jiaoan
-- NestJS（已编译到 `dist/`，**`dist/` 已 gitignore，部署需重新 build**）+ Python（docx 生成）。
+- NestJS（**本仓库里只有编译产物 `dist/`，没有 TS 源码**：无 `src/`、`tsconfig.json`、`nest-cli.json`，
+  故 `pnpm build`（=nest build）在本机**跑不起来**。源码在别处，疑似 Coze 平台生成，见依赖 `coze-coding-dev-sdk`）+ Python（docx 生成）。
+- **`dist/` 已 gitignore**：`git clone` 到服务器**不会带 dist**，又无法在本机 build。
+  → 部署 jiaoan 必须**把 `dist/` 文件夹整个拷贝到服务器**（连同 `node_modules` 经 `pnpm install` 重建）。
+- 改 jiaoan 行为只能直接改 `dist/*.js`（无源码可重编译；这儿也不会被 build 覆盖，改动会保留，但若日后从原始源码重新生成 dist 会丢失）。
 - 读 DeepSeek key 的顺序（`dist/jiaoan/deepseek.client.js` 的 `resolveApiKey`）：
   ① 环境变量 `DEEPSEEK_API_KEY` → ② `DEEPSEEK_API_KEY_FILE` 指向的文件 → ③ 自动搜名为 `deepseek_api_key.txt` 的文件。
 
@@ -118,7 +122,8 @@
 2. 装 Node.js 24.x（默认 `C:\Program Files\nodejs\`）。
 3. 装 Python（jiaoan 的 docx 生成需要）。
 4. 装依赖：main-app `npm install`；jiaoan `pnpm install`。
-5. **构建 jiaoan**：`pnpm build`，生成 `dist/main.js`（否则 jiaoan 服务起不来；不影响主应用）。
+5. **拷贝 jiaoan 的 `dist/`**：本仓库无 jiaoan 源码、无法 build，且 `dist/` 已 gitignore（git clone 不会带过去）。
+   → 必须把开发机的 `jiaoan/dist/` 整个**拷贝**到服务器对应位置（否则 jiaoan 起不来；不影响主应用）。
 6. **重建机密文件**（都已 gitignore，不会随 git 过去）：`main-app/.env`、`jiaoan/deepseek_api_key.txt`、
    备份加密密码文件、163 邮箱配置。
 7. 初始化数据库：main-app `npm run prisma:generate` + `npm run prisma:migrate`（或把现有 .db 拷过去）。
