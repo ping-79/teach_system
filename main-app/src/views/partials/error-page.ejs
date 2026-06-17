@@ -1,0 +1,31 @@
+<%- include('head', { title }) %>
+
+<!-- 确保在 head.ejs 中已经引入了 arch-theme.css -->
+<script>
+  // 如果是从系统内部跳转过来的错误页，确保 body 加上暗黑背景主题类
+  document.body.classList.add('arch-theme');
+</script>
+
+<style>
+  .arch-title {
+    font-family: "SF Mono", monospace;
+    font-size: 64px;
+    font-weight: 600;
+    color: #f5f5f7;
+    letter-spacing: 0.05em;
+    margin: 0 0 16px 0;
+  }
+  .arch-message {
+    font-size: 24px;
+    color: #86868b;
+    margin-bottom: 40px;
+  }
+</style>
+
+<main class="architecture-error-page">
+  <h1 class="arch-title">[ ERR: <%= title %> ]</h1>
+  <p class="arch-message"><%= message %></p>
+  <a class="arch-btn" style="width:auto;" href="/dashboard">中止并返回主轴</a>
+</main>
+
+<%- include('footer') %>

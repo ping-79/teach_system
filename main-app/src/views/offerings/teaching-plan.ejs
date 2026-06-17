@@ -1,0 +1,124 @@
+<%- include('../partials/head', { title }) %>
+<%- include('../partials/header') %>
+<main class="page-shell">
+  <%- include('../partials/flash') %>
+
+  <section class="hero-panel print-hidden">
+    <div>
+      <p class="eyebrow">Teaching Plan</p>
+      <h1><%= offering.courseName %></h1>
+      <p><%= offering.className %> · <%= offering.semester.schoolYear %> 第 <%= offering.semester.termNumber %> 学期</p>
+      <% if (matchingLibrary) { %>
+        <p class="muted">课程资料库已匹配 <strong><%= matchingLibrary.items.length %></strong> 条授课内容，可直接导入当前计划表。</p>
+      <% } else { %>
+        <p class="muted">当前课程还没有可直接导入的授课内容资料，可先上传授课内容文档生成。</p>
+      <% } %>
+    </div>
+
+    <div class="action-stack">
+      <div class="action-row">
+        <form method="post" action="/offerings/<%= offering.id %>/import-library-content">
+          <button type="submit" class="ghost-button">从资料库导入授课内容</button>
+        </form>
+      </div>
+
+      <form method="post" action="/offerings/<%= offering.id %>/upload-content" enctype="multipart/form-data" class="inline-upload">
+        <label class="file-field">
+          <span>上传授课内容文档并自动填入</span>
+          <input type="file" name="contentFile" accept=".doc,.docx,.xls,.xlsx,.txt" required>
+        </label>
+        <button type="submit" class="primary-button">上传并分析</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel">
+    <form method="post" action="/plans/<%= document.id %>/save" class="stack-form plan-form" data-plan-form>
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Header</p>
+          <h2>课程信息</h2>
+        </div>
+        <p class="muted">当前表格按实际内容行数显示，可手动增加或删减条目。</p>
+      </div>
+
+      <div class="grid-form">
+        <label>
+          <span>总学时</span>
+          <input type="number" step="0.5" name="totalHours" value="<%= document.totalHours || offering.courseTotalHours || '' %>">
+        </label>
+        <label>
+          <span>理论学时</span>
+          <input type="number" step="0.5" name="theoryHours" value="<%= document.theoryHours || '' %>">
+        </label>
+        <label>
+          <span>实践学时</span>
+          <input type="number" step="0.5" name="practiceHours" value="<%= document.practiceHours || '' %>">
+        </label>
+        <label>
+          <span>周学时</span>
+          <input type="number" step="0.5" name="weeklyHours" value="<%= document.weeklyHours || '' %>">
+        </label>
+      </div>
+
+      <div class="section-head top-gap">
+        <div>
+          <p class="eyebrow">Rows</p>
+          <h2>教学内容</h2>
+        </div>
+        <p class="muted">理论 / 实践列直接填写学时，不再单独选择授课方式。</p>
+      </div>
+
+      <div class="table-wrap">
+        <table class="edit-table" data-plan-table>
+          <thead>
+            <tr>
+              <th rowspan="2">序号</th>
+              <th rowspan="2">周次</th>
+              <th rowspan="2">月/日</th>
+              <th rowspan="2">节次</th>
+              <th rowspan="2">教学内容</th>
+              <th rowspan="2">学时</th>
+              <th colspan="2">教学方式</th>
+            </tr>
+            <tr>
+              <th>理论</th>
+              <th>实践</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% for (let index = 0; index < maxRows; index += 1) { const row = document.rows[index]; %>
+              <tr>
+                <td class="row-index"><%= index + 1 %></td>
+                <td><input type="number" name="rows[<%= index %>][weekIndex]" value="<%= row?.weekIndex || '' %>"></td>
+                <td><input type="text" name="rows[<%= index %>][dateText]" value="<%= row?.dateText || '' %>"></td>
+                <td><input type="text" name="rows[<%= index %>][periodText]" value="<%= row?.periodText || '' %>"></td>
+                <td><textarea name="rows[<%= index %>][topicText]" rows="2"><%= row?.topicText || '' %></textarea></td>
+                <td><input type="number" step="0.5" name="rows[<%= index %>][hours]" value="<%= row?.hours || '' %>"></td>
+                <td><input type="number" step="0.5" name="rows[<%= index %>][theoryHours]" value="<%= row?.theoryHours || '' %>"></td>
+                <td><input type="number" step="0.5" name="rows[<%= index %>][practiceHours]" value="<%= row?.practiceHours || '' %>"></td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="action-row top-gap plan-bottom-actions print-hidden">
+        <button type="submit" class="primary-button">保存教学进度计划表</button>
+        <button type="button" class="ghost-button" data-plan-add-row>增加条目</button>
+        <button type="button" class="ghost-button" data-plan-remove-row>删减条目</button>
+        <button
+          type="submit"
+          class="ghost-button"
+          formaction="/offerings/<%= offering.id %>/request-library-update"
+          formmethod="post"
+        >
+          申请更新资料库授课内容
+        </button>
+        <a class="ghost-button" href="/plans/<%= document.id %>/export/word">导出 Word</a>
+        <button type="button" class="ghost-button" data-plan-print-pdf>导出 PDF</button>
+      </div>
+    </form>
+  </section>
+</main>
+<%- include('../partials/footer') %>

@@ -1,0 +1,7 @@
+<% if (flashMessages && flashMessages.length) { %>
+  <section class="flash-stack">
+    <% flashMessages.forEach((item) => { %>
+      <div class="flash <%= item.type %>"><%= item.message %></div>
+    <% }) %>
+  </section>
+<% } %>

@@ -1,0 +1,35 @@
+<header class="site-header">
+  <div class="masthead-inner">
+    <a class="brand" href="/dashboard">
+      <img class="brand-emblem" src="/images/emblem.png" alt="人居环境与艺术学院校徽">
+      <span class="brand-divider"></span>
+      <span class="brand-text">
+        <span class="brand-name">人居环境与艺术学院</span>
+        <span class="brand-sub">教学资料管理系统</span>
+      </span>
+    </a>
+    <% if (currentUser) { %>
+      <nav class="main-nav">
+        <a class="<%= requestPath === '/' || requestPath === '/dashboard' || requestPath.startsWith('/teaching-workflow') || requestPath.startsWith('/semesters') || requestPath.startsWith('/offerings') || requestPath.startsWith('/plans') ? 'active' : '' %>" href="/teaching-workflow">教学进度</a>
+        <a class="<%= requestPath.startsWith('/lesson-plan-generator') ? 'active' : '' %>" href="/lesson-plan-generator">教案生成</a>
+        <a class="<%= requestPath.startsWith('/teacher-profile') ? 'active' : '' %>" href="/teacher-profile">教师档案</a>
+        <a class="<%= (requestPath.startsWith('/achievements') || requestPath.startsWith('/admin/achievement-review')) ? 'active' : '' %>" href="/achievements">业绩量化</a>
+        <a class="<%= requestPath.startsWith('/content-library') ? 'active' : '' %>" href="/content-library">课程资料库</a>
+      </nav>
+      <div class="user-panel">
+        <div class="user-meta">
+          <strong><%= currentUser.teacherProfile?.name || currentUser.username %></strong>
+          <p><%= currentUser.role === "admin" ? "管理员" : currentUser.teacherProfile?.employeeNo %></p>
+        </div>
+        <% if (currentUser.role === "admin") { %>
+          <a class="ghost-button" href="/admin/achievement-review">业绩复核</a>
+          <a class="ghost-button" href="/admin/teachers">教师账号管理</a>
+        <% } %>
+        <a class="ghost-button" href="/change-password">修改密码</a>
+        <form method="post" action="/logout">
+          <button type="submit" class="ghost-button">退出</button>
+        </form>
+      </div>
+    <% } %>
+  </div>
+</header>

@@ -1,0 +1,68 @@
+<%- include('../partials/head', { title }) %>
+<%- include('../partials/header') %>
+<main class="page-shell">
+  <%- include('../partials/flash') %>
+
+  <section class="section-head">
+    <div>
+      <p class="eyebrow">Review</p>
+      <h1>业绩复核</h1>
+      <p class="muted">自评 → 初步复核 → 最终复核。终复通过即盖"已认定"。</p>
+    </div>
+    <div class="cat-tabs review-filter">
+      <a class="cat-tab <%= statusFilter === '' ? 'active' : '' %>" href="/admin/achievement-review">待复核</a>
+      <a class="cat-tab <%= statusFilter === 'SUBMITTED' ? 'active' : '' %>" href="/admin/achievement-review?status=SUBMITTED">已提交</a>
+      <a class="cat-tab <%= statusFilter === 'PRELIM_REVIEWED' ? 'active' : '' %>" href="/admin/achievement-review?status=PRELIM_REVIEWED">初复完成</a>
+      <a class="cat-tab <%= statusFilter === 'FINAL_REVIEWED' ? 'active' : '' %>" href="/admin/achievement-review?status=FINAL_REVIEWED">终复完成</a>
+    </div>
+  </section>
+
+  <section class="panel">
+    <% if (!achievements.length) { %>
+      <div class="empty-state">当前筛选下没有待复核业绩。</div>
+    <% } else { %>
+      <div class="ach-list">
+        <% achievements.forEach((a) => { %>
+          <article class="ach-row review-row">
+            <div class="ach-row-main">
+              <div class="ach-row-title">
+                <strong><%= a.title %></strong>
+                <% if (a.verified) { %><span class="seal">已认定</span><% } %>
+              </div>
+              <p class="ach-row-meta">
+                <span class="tag"><%= a.teacher.name %></span>
+                <span class="tag"><%= constants.CATEGORY_LABELS[a.category] %> / <%= a.subType %></span>
+                <%= a.year %> 年
+                <% if (a.level !== 'NONE') { %> · <%= constants.LEVEL_LABELS[a.level] %><% } %>
+                <% if (a.rank !== 'NONE') { %> · <%= constants.RANK_LABELS[a.rank] %><% } %>
+                <% if (a.authorOrder) { %> · 本人第 <%= a.authorOrder %><% } %>
+                <% if (a.reviewDept) { %> · 建议：<%= a.reviewDept %><% } %>
+              </p>
+              <p class="ach-row-meta">
+                自评 <strong><%= a.selfScore == null ? '—' : a.selfScore %></strong>
+                · 初复 <strong><%= a.prelimScore == null ? '—' : a.prelimScore %></strong>
+                · 终复 <strong><%= a.finalScore == null ? '—' : a.finalScore %></strong>
+                · 系统建议 <%= a.computedScore == null ? '—' : a.computedScore %>
+                · 佐证 <%= a.attachments.length %> 件
+              </p>
+              <% if (a.selfDescription) { %><p class="muted review-desc"><%= a.selfDescription %></p><% } %>
+            </div>
+            <div class="ach-row-review">
+              <span class="status-pill ach-pill-<%= a.reviewStatus.toLowerCase() %>"><%= constants.REVIEW_STATUS_LABELS[a.reviewStatus] %></span>
+              <form method="post" action="/admin/achievement-review/<%= a.id %>" class="review-form">
+                <input type="number" step="0.1" name="score" placeholder="复核分" value="<%= a.prelimScore != null && a.finalScore == null ? a.prelimScore : '' %>">
+                <input type="text" name="reviewNote" placeholder="复核意见（可选）" value="<%= a.reviewNote || '' %>">
+                <div class="review-buttons">
+                  <button type="submit" name="action" value="prelim" class="ghost-button">初复</button>
+                  <button type="submit" name="action" value="final" class="primary-button">终复通过</button>
+                  <button type="submit" name="action" value="reject" class="danger-button">退回</button>
+                </div>
+              </form>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+</main>
+<%- include('../partials/footer') %>

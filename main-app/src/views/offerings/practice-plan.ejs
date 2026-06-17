@@ -1,0 +1,52 @@
+<%- include('../partials/head', { title }) %>
+<%- include('../partials/header') %>
+<main class="page-shell">
+  <%- include('../partials/flash') %>
+  <section class="hero-panel">
+    <div>
+      <p class="eyebrow">Practice Plan</p>
+      <h1><%= offering.courseName %> · <%= offering.className %></h1>
+      <p>当前页面已完成实践数据抽取，正式模板待你后续提供《实践进度计划表》空表。</p>
+    </div>
+    <a class="ghost-button" href="/offerings/<%= offering.id %>/teaching-plan">返回教学计划</a>
+  </section>
+
+  <section class="panel">
+    <% if (!document || !document.rows.length) { %>
+      <div class="empty-state">当前课程还没有识别到实践行，或者尚未在教学计划里保存实践内容。</div>
+    <% } else { %>
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Derived Rows</p>
+          <h2>实践数据</h2>
+        </div>
+        <p>共 <%= document.rows.length %> 行 · 实践学时 <%= helpers.trimFloat(document.practiceHours || 0) %></p>
+      </div>
+      <div class="table-wrap">
+        <table class="edit-table">
+          <thead>
+            <tr>
+              <th>周次</th>
+              <th>月/日</th>
+              <th>节次</th>
+              <th>实践内容</th>
+              <th>学时</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% document.rows.forEach((row) => { %>
+              <tr>
+                <td><%= row.weekIndex || '' %></td>
+                <td><%= row.dateText || '' %></td>
+                <td><%= row.periodText || '' %></td>
+                <td><%= row.topicText || '' %></td>
+                <td><%= helpers.trimFloat(row.practiceHours || row.hours || 0) %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </section>
+</main>
+<%- include('../partials/footer') %>

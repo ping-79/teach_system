@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教案生成系统</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/jiaoan/styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="page-header">
+      <h1>教案生成系统</h1>
+    </header>
+
+    <section class="content">
+      <section class="step-card">
+        <h2>1. 下载教案提纲模板</h2>
+        <p class="card-desc">下载标准教案提纲模板，按要求填写。</p>
+        <a class="primary-link" href="/api/jiaoan/sample-docx">下载教案提纲模板 .docx</a>
+      </section>
+
+      <section class="step-card upload-step">
+        <h2>2. 上传教案提纲，开始生成教案</h2>
+        <form id="jiaoanForm" class="upload-form">
+          <div class="upload-grid">
+            <label class="upload-box" for="teachingFile">
+              <span class="upload-icon">⇧</span>
+              <span class="upload-text">点击上传教案提纲</span>
+              <span id="selectedFileName" class="upload-file-name">未选择文件</span>
+            </label>
+            <button id="submitBtn" class="primary-action" type="submit">开始生成教案</button>
+          </div>
+          <input id="teachingFile" name="teachingFile" type="file" accept=".docx" required>
+        </form>
+
+        <div id="status" class="status">等待上传 docx 教案提纲</div>
+        <div id="jobInfo" class="job-info hidden"></div>
+      </section>
+
+      <section class="step-card result-step">
+        <h2>3. 下载教案</h2>
+        <div id="downloadArea" class="download-area hidden">
+          <button id="downloadBtn" class="primary-action" type="button">下载生成结果</button>
+        </div>
+        <div id="downloadPlaceholder" class="download-placeholder">生成完成后，这里会显示下载按钮。</div>
+
+        <details class="history-card history-collapsed">
+          <summary class="history-summary">
+            <span>历史任务（近 30 天）</span>
+            <span class="history-summary-tip">点击展开</span>
+          </summary>
+          <div class="history-head">
+            <h2>历史任务（近 30 天）</h2>
+            <button id="refreshHistoryBtn" class="ghost-btn" type="button">刷新</button>
+          </div>
+          <div id="historyList" class="history-list"></div>
+        </details>
+      </section>
+    </section>
+  </main>
+
+  <script src="/jiaoan/app.js"></script>
+</body>
+</html>

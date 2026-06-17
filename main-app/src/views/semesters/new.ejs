@@ -1,0 +1,33 @@
+<%- include('../partials/head', { title }) %>
+<%- include('../partials/header') %>
+<main class="page-shell compact">
+  <%- include('../partials/flash') %>
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Semester</p>
+        <h1>新建学期</h1>
+      </div>
+      <p>日期基准统一使用正式上课第一天。</p>
+    </div>
+    <form method="post" action="/semesters" class="grid-form">
+      <label>
+        <span>学年</span>
+        <input type="text" name="schoolYear" placeholder="例如：2025-2026" required>
+      </label>
+      <label>
+        <span>学期</span>
+        <select name="termNumber" required>
+          <option value="1">第一学期</option>
+          <option value="2">第二学期</option>
+        </select>
+      </label>
+      <label class="wide">
+        <span>正式上课第一天</span>
+        <input type="date" name="teachingStartDate" required>
+      </label>
+      <button type="submit" class="primary-button">保存学期并进入</button>
+    </form>
+  </section>
+</main>
+<%- include('../partials/footer') %>

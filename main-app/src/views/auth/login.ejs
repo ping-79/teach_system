@@ -1,0 +1,37 @@
+<%- include('../partials/head', { title }) %>
+<main class="auth-screen">
+  <section class="login-split">
+    <div class="login-hero">
+      <div class="login-hero-brand">
+        <img src="/images/emblem.png" alt="人居环境与艺术学院校徽">
+        <span>人居环境与艺术学院</span>
+      </div>
+      <div class="login-hero-motto">
+        <div class="login-hero-rule"></div>
+        <h2>一家样式雷<br>半部古建史</h2>
+        <p>营造法式薪火相传，业绩量化笃行致远。</p>
+      </div>
+    </div>
+    <div class="login-form-side">
+      <h1>教学资料管理系统</h1>
+      <p class="login-sub">教师自助登录 · 请使用工号</p>
+      <%- include('../partials/flash') %>
+      <form method="post" action="/auth/login" class="stack-form">
+        <label>
+          <span>工号 / 管理员账号</span>
+          <input type="text" name="username" placeholder="例如：20231007" required>
+        </label>
+        <label>
+          <span>密码</span>
+          <input type="password" name="password" placeholder="请输入密码" required>
+        </label>
+        <button type="submit" class="primary-button login-submit">登 录</button>
+      </form>
+      <div class="login-foot">
+        <span>© 2026 教务处 · 样式雷研究协会</span>
+        <span class="badge-shuanggao">全省双高 · 古建专业群</span>
+      </div>
+    </div>
+  </section>
+</main>
+<%- include('../partials/footer') %>

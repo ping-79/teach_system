@@ -1,0 +1,64 @@
+<%- include('../partials/head', { title }) %>
+<%- include('../partials/header') %>
+<main class="page-shell">
+  <%- include('../partials/flash') %>
+  <section class="grid-two">
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Teachers</p>
+          <h1>创建教师账号</h1>
+        </div>
+        <p>账号名固定使用教师工号，教师首次登录时可自行再修改密码。</p>
+      </div>
+      <form method="post" action="/admin/teachers" class="stack-form">
+        <label>
+          <span>教师工号</span>
+          <input type="text" name="employeeNo" placeholder="例如：HR000812" required>
+        </label>
+        <label>
+          <span>教师姓名</span>
+          <input type="text" name="name" placeholder="例如：吴一平" required>
+        </label>
+        <label>
+          <span>学院</span>
+          <input type="text" name="college" placeholder="例如：人居环境与艺术学院" required>
+        </label>
+        <label>
+          <span>初始密码</span>
+          <input type="password" name="password" minlength="8" required>
+        </label>
+        <button type="submit" class="primary-button">创建教师账号</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Accounts</p>
+          <h2>已有教师</h2>
+        </div>
+      </div>
+      <div class="list-stack">
+        <% teachers.forEach((teacher) => { %>
+          <div class="list-card teacher-card">
+            <div class="teacher-card-main">
+              <strong><%= teacher.name %>（<%= teacher.employeeNo %>）</strong>
+              <p><%= teacher.college %></p>
+            </div>
+            <div class="teacher-card-side">
+              <span class="teacher-status"><%= teacher.user?.mustChangePassword ? '待改密' : '可用' %></span>
+              <div class="teacher-actions">
+                <a class="ghost-button" href="/admin/teachers/<%= teacher.id %>/password">修改密码</a>
+                <form method="post" action="/admin/teachers/<%= teacher.id %>/delete" onsubmit="return confirm('确定删除该教师账号及其关联数据吗？');">
+                  <button type="submit" class="danger-button">删除</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+  </section>
+</main>
+<%- include('../partials/footer') %>

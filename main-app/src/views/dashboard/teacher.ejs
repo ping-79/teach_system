@@ -1,0 +1,71 @@
+<%- include('../partials/head', { title }) %>
+<%- include('../partials/header') %>
+<main class="page-shell">
+  <%- include('../partials/flash') %>
+  <section class="hero-panel">
+    <div>
+      <p class="eyebrow">Teaching Workflow</p>
+      <h1>教学资料智能填报系统</h1>
+      <p>先选择学期，再上传课表，系统会自动生成课程卡片与教学进度计划表。</p>
+    </div>
+    <div class="hero-metrics">
+      <div class="metric-card">
+        <span>已建学期</span>
+        <strong><%= semesters.length %></strong>
+      </div>
+      <div class="metric-card">
+        <span>资料库课程</span>
+        <strong><%= libraries %></strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid-two">
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Semesters</p>
+          <h2>学期入口</h2>
+        </div>
+        <a class="primary-button" href="/semesters/new">新建学期</a>
+      </div>
+      <% if (!semesters.length) { %>
+        <div class="empty-state">还没有学期数据，先新建一个学期开始导入课表。</div>
+      <% } else { %>
+        <div class="list-stack">
+          <% semesters.forEach((semester) => { %>
+            <a class="list-card" href="/semesters/<%= semester.id %>">
+              <div>
+                <strong><%= semester.schoolYear %> 第 <%= semester.termNumber %> 学期</strong>
+                <p>正式上课第一天：<%= helpers.formatDate(semester.teachingStartDate) %></p>
+              </div>
+              <span><%= semester.offeringCount %> 门课程</span>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Modules</p>
+          <h2>模块状态</h2>
+        </div>
+      </div>
+      <div class="module-card active">
+        <strong>教学资料智能填报系统</strong>
+        <p>第一版已接入学期、课表导入、教学计划生成、课程内容资料库。</p>
+      </div>
+      <div class="module-card disabled">
+        <strong>教案生成系统</strong>
+        <p>入口已预留，后续接入 DeepSeek 做教案生成。</p>
+      </div>
+      <div class="module-card disabled">
+        <strong>教师档案</strong>
+        <p>入口已预留，后续汇总每学期授课与科研成果。</p>
+      </div>
+    </section>
+  </section>
+</main>
+<%- include('../partials/footer') %>

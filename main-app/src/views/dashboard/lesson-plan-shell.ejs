@@ -1,0 +1,46 @@
+<%- include('../partials/head', { title }) %>
+<%- include('../partials/header') %>
+<main class="page-shell lesson-plan-page">
+  <%- include('../partials/flash') %>
+
+  <section class="hero-panel lesson-plan-hero">
+    <div>
+      <p class="eyebrow">Lesson Plan</p>
+      <h1>教案生成系统</h1>
+      <p class="muted">上传教学文稿，生成整套教案文档，并在当前系统内查看历史任务与下载结果。</p>
+    </div>
+    <div class="lesson-plan-hero-tag">主项目内置入口</div>
+  </section>
+
+  <section class="panel lesson-plan-panel">
+    <div class="action-row">
+      <a class="ghost-button" href="/api/lesson-plan/sample-docx">下载教案模板</a>
+    </div>
+
+    <form id="lessonPlanForm" class="stack-form">
+      <label class="lesson-plan-field">
+        <span>教学文稿（仅支持 docx）</span>
+        <input id="teachingFile" name="teachingFile" type="file" accept=".docx" required>
+        <small class="muted">请先下载并参考教案模板，在文稿开头填写班级、授课地点、授课类型、授课形式、审核人，再在首张表中逐行填写每份教案。</small>
+      </label>
+
+      <button id="submitBtn" type="submit" class="primary-button lesson-plan-submit">开始生成</button>
+    </form>
+
+    <div id="status" class="lesson-plan-status">等待上传 docx 教学文稿</div>
+    <div id="jobInfo" class="lesson-plan-job-info hidden"></div>
+    <div id="downloadArea" class="download-area hidden">
+      <button id="downloadBtn" type="button" class="ghost-button">下载生成结果</button>
+    </div>
+  </section>
+
+  <section class="panel lesson-plan-panel">
+    <div class="history-head">
+      <h2>历史任务（近 30 天）</h2>
+      <button id="refreshHistoryBtn" class="ghost-button" type="button">刷新</button>
+    </div>
+    <div id="historyList" class="history-list"></div>
+  </section>
+</main>
+<script src="/scripts/lesson-plan.js"></script>
+<%- include('../partials/footer') %>

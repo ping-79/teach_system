@@ -1,0 +1,113 @@
+<%- include('../partials/head', { title }) %>
+<%- include('../partials/header') %>
+<main class="page-shell">
+  <%- include('../partials/flash') %>
+
+  <section class="section-head">
+    <div>
+      <p class="eyebrow">Performance</p>
+      <h1><%= teacher.name %> · 业绩量化</h1>
+      <p class="muted">工号 <%= teacher.employeeNo %><% if (isAdminView) { %> · <span class="tag">管理员视角</span><% } %></p>
+    </div>
+    <div class="action-row">
+      <a class="ghost-button" href="/achievements/stats">数据统计 →</a>
+      <a class="primary-button" href="/achievements/new<%= teacherIdParam %>">＋ 录入业绩</a>
+    </div>
+  </section>
+
+  <!-- 量化总分概览 -->
+  <section class="score-overview">
+    <div class="score-card score-card-total">
+      <span class="score-card-label">量化总分（有效得分）</span>
+      <strong class="score-card-value"><%= total %></strong>
+      <span class="score-card-hint">终复&gt;初复&gt;自评&gt;系统建议</span>
+    </div>
+    <% constants.CATEGORY_ORDER.forEach((cat) => { %>
+      <div class="score-card score-card-<%= cat.toLowerCase() %>">
+        <span class="score-card-label"><%= constants.CATEGORY_LABELS[cat] %></span>
+        <strong class="score-card-value"><%= Math.round((subtotals[cat] || 0) * 100) / 100 %></strong>
+        <span class="score-card-hint"><%= grouped[cat].length %> 条业绩</span>
+      </div>
+    <% }) %>
+  </section>
+
+  <!-- 类目 Tab -->
+  <section class="panel">
+    <div class="cat-tabs" role="tablist">
+      <% constants.CATEGORY_ORDER.forEach((cat, i) => { %>
+        <button type="button" class="cat-tab <%= i === 0 ? 'active' : '' %>" data-cat="<%= cat %>">
+          <%= constants.CATEGORY_LABELS[cat] %>
+          <span class="cat-tab-count"><%= grouped[cat].length %></span>
+        </button>
+      <% }) %>
+    </div>
+
+    <% constants.CATEGORY_ORDER.forEach((cat, i) => { %>
+      <div class="cat-panel <%= i === 0 ? 'active' : '' %>" data-cat-panel="<%= cat %>">
+        <% if (!grouped[cat].length) { %>
+          <div class="empty-state">该类目下还没有业绩，点击右上角"录入业绩"添加。</div>
+        <% } else { %>
+          <div class="ach-list">
+            <% grouped[cat].forEach((a) => { %>
+              <article class="ach-row ach-status-<%= a.reviewStatus.toLowerCase() %>">
+                <div class="ach-row-main">
+                  <div class="ach-row-title">
+                    <strong><%= a.title %></strong>
+                    <% if (a.verified) { %><span class="seal">已认定</span><% } %>
+                  </div>
+                  <p class="ach-row-meta">
+                    <span class="tag"><%= a.subType %></span>
+                    <%= a.year %> 年
+                    <% if (a.level && a.level !== 'NONE') { %> · <%= constants.LEVEL_LABELS[a.level] %><% } %>
+                    <% if (a.rank && a.rank !== 'NONE') { %> · <%= constants.RANK_LABELS[a.rank] %><% } %>
+                    <% if (a.authorOrder) { %> · 本人第 <%= a.authorOrder %><% } %>
+                    <% if (a.attachments && a.attachments.length) { %> · 佐证 <%= a.attachments.length %> 件<% } %>
+                  </p>
+                </div>
+                <div class="ach-row-score">
+                  <span class="ach-score-status status-pill ach-pill-<%= a.reviewStatus.toLowerCase() %>"><%= constants.REVIEW_STATUS_LABELS[a.reviewStatus] %></span>
+                  <div class="ach-score-num">
+                    <%
+                      var eff = a.finalScore != null ? a.finalScore : (a.prelimScore != null ? a.prelimScore : (a.selfScore != null ? a.selfScore : a.computedScore));
+                    %>
+                    <strong><%= eff == null ? '—' : eff %></strong>
+                    <small>分</small>
+                  </div>
+                </div>
+                <div class="ach-row-actions">
+                  <a class="ghost-button" href="/achievements/<%= a.id %>/edit">编辑</a>
+                  <% if (a.reviewStatus === 'DRAFT' || a.reviewStatus === 'REJECTED') { %>
+                    <form method="post" action="/achievements/<%= a.id %>/submit">
+                      <% if (isAdminView) { %><input type="hidden" name="teacherId" value="<%= teacher.id %>"><% } %>
+                      <button type="submit" class="ghost-button">提交复核</button>
+                    </form>
+                  <% } %>
+                  <form method="post" action="/achievements/<%= a.id %>/delete" onsubmit="return confirm('确认删除该业绩吗？');">
+                    <% if (isAdminView) { %><input type="hidden" name="teacherId" value="<%= teacher.id %>"><% } %>
+                    <button type="submit" class="danger-button">删除</button>
+                  </form>
+                </div>
+              </article>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+    <% }) %>
+  </section>
+</main>
+<script>
+  (function () {
+    var tabs = document.querySelectorAll('.cat-tab');
+    var panels = document.querySelectorAll('[data-cat-panel]');
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var cat = tab.getAttribute('data-cat');
+        tabs.forEach(function (t) { t.classList.toggle('active', t === tab); });
+        panels.forEach(function (p) {
+          p.classList.toggle('active', p.getAttribute('data-cat-panel') === cat);
+        });
+      });
+    });
+  })();
+</script>
+<%- include('../partials/footer') %>

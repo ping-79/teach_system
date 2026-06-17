@@ -1,0 +1,35 @@
+<%- include('../partials/head', { title }) %>
+<%- include('../partials/header') %>
+<main class="page-shell">
+  <%- include('../partials/flash') %>
+
+  <section class="section-head">
+    <div>
+      <p class="eyebrow">Teacher Profiles</p>
+      <h1>教师档案</h1>
+    </div>
+    <p class="muted">选择一位教师查看/代填其档案与证书。共 <%= teachers.length %> 人。</p>
+  </section>
+
+  <section class="panel">
+    <% if (!teachers.length) { %>
+      <div class="empty-state">还没有教师账号，请先在"教师账号管理"中创建。</div>
+    <% } else { %>
+      <div class="list-stack">
+        <% teachers.forEach((t) => { %>
+          <article class="list-card">
+            <div class="teacher-card-main">
+              <strong><%= t.name %></strong>
+              <p>工号 <%= t.employeeNo %> · <%= t.titleName || '职称未填' %> · 证书 <%= t._count.credentials %> · 业绩 <%= t._count.achievements %></p>
+            </div>
+            <div class="teacher-card-side">
+              <a class="ghost-button" href="/teacher-profile?teacherId=<%= t.id %>">档案</a>
+              <a class="ghost-button" href="/achievements?teacherId=<%= t.id %>">业绩</a>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+</main>
+<%- include('../partials/footer') %>

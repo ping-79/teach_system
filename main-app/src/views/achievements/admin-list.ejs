@@ -1,0 +1,37 @@
+<%- include('../partials/head', { title }) %>
+<%- include('../partials/header') %>
+<main class="page-shell">
+  <%- include('../partials/flash') %>
+
+  <section class="section-head">
+    <div>
+      <p class="eyebrow">Performance</p>
+      <h1>教师业绩</h1>
+    </div>
+    <div class="action-row">
+      <a class="ghost-button" href="/achievements/stats">数据统计 →</a>
+      <a class="ghost-button" href="/admin/achievement-review">待复核业绩 →</a>
+    </div>
+  </section>
+
+  <section class="panel">
+    <% if (!teachers.length) { %>
+      <div class="empty-state">还没有教师账号。</div>
+    <% } else { %>
+      <div class="list-stack">
+        <% teachers.forEach((t) => { %>
+          <article class="list-card">
+            <div class="teacher-card-main">
+              <strong><%= t.name %></strong>
+              <p>工号 <%= t.employeeNo %> · 业绩 <%= t._count.achievements %> 条</p>
+            </div>
+            <div class="teacher-card-side">
+              <a class="ghost-button" href="/achievements?teacherId=<%= t.id %>">查看业绩</a>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+</main>
+<%- include('../partials/footer') %>

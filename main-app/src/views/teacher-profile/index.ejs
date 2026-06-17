@@ -1,0 +1,208 @@
+<%- include('../partials/head', { title }) %>
+<%- include('../partials/header') %>
+<main class="page-shell">
+  <%- include('../partials/flash') %>
+
+  <section class="section-head profile-head">
+    <div>
+      <p class="eyebrow">Teacher Profile</p>
+      <h1><%= teacher.name %> · 教师档案</h1>
+      <p class="muted">工号 <%= teacher.employeeNo %> · <%= teacher.college %><% if (isAdminView) { %> · <span class="tag">管理员代填</span><% } %></p>
+    </div>
+    <div class="profile-head-metrics">
+      <div class="metric-card">
+        <span>工龄</span>
+        <strong><%= workYears === null ? '—' : workYears + ' 年' %></strong>
+      </div>
+      <div class="metric-card">
+        <span>校龄</span>
+        <strong><%= schoolYears === null ? '—' : schoolYears + ' 年' %></strong>
+      </div>
+      <div class="metric-card">
+        <span>职称</span>
+        <strong><%= teacher.titleName || '—' %></strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Basic Info</p>
+        <h2>基础信息</h2>
+      </div>
+      <p class="muted">工龄/校龄由"参加工作时间/来校时间"自动推算。</p>
+    </div>
+
+    <form method="post" action="/teacher-profile<%= isAdminView ? ('?teacherId=' + teacher.id) : '' %>" enctype="multipart/form-data" class="grid-form">
+      <% if (isAdminView) { %><input type="hidden" name="teacherId" value="<%= teacher.id %>"><% } %>
+      <label>
+        <span>性别</span>
+        <select name="gender">
+          <option value="">未填写</option>
+          <option value="男" <%= teacher.gender === '男' ? 'selected' : '' %>>男</option>
+          <option value="女" <%= teacher.gender === '女' ? 'selected' : '' %>>女</option>
+        </select>
+      </label>
+      <label>
+        <span>出生年月</span>
+        <input type="date" name="birthDate" value="<%= helpers.formatDate(teacher.birthDate) %>">
+      </label>
+      <label>
+        <span>政治面貌</span>
+        <input type="text" name="politicalStatus" value="<%= teacher.politicalStatus || '' %>" placeholder="如：中共党员">
+      </label>
+      <label>
+        <span>教研室</span>
+        <input type="text" name="department" value="<%= teacher.department || '' %>" placeholder="如：古建营造教研室">
+      </label>
+      <label>
+        <span>所属专业</span>
+        <input type="text" name="major" value="<%= teacher.major || '' %>" placeholder="如：古建筑工程技术">
+      </label>
+      <label>
+        <span>职务/行政</span>
+        <input type="text" name="duty" value="<%= teacher.duty || '' %>" placeholder="如：教研室主任">
+      </label>
+      <label>
+        <span>最高学历</span>
+        <input type="text" name="highestEducation" value="<%= teacher.highestEducation || '' %>" placeholder="如：研究生">
+      </label>
+      <label>
+        <span>最高学位</span>
+        <input type="text" name="highestDegree" value="<%= teacher.highestDegree || '' %>" placeholder="如：硕士">
+      </label>
+      <label>
+        <span>职称</span>
+        <input type="text" name="titleName" value="<%= teacher.titleName || '' %>" placeholder="如：副教授">
+      </label>
+      <label>
+        <span>岗位等级</span>
+        <input type="text" name="postLevel" value="<%= teacher.postLevel || '' %>" placeholder="如：副高七级">
+      </label>
+      <label>
+        <span>职称评定时间</span>
+        <input type="date" name="titleDate" value="<%= helpers.formatDate(teacher.titleDate) %>">
+      </label>
+      <label>
+        <span>双师型等级</span>
+        <select name="doubleQualLevel">
+          <option value="">未填写</option>
+          <% ['初级','中级','高级','无'].forEach((lv) => { %>
+            <option value="<%= lv %>" <%= teacher.doubleQualLevel === lv ? 'selected' : '' %>><%= lv %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label>
+        <span>参加工作时间</span>
+        <input type="date" name="workStartDate" value="<%= helpers.formatDate(teacher.workStartDate) %>">
+      </label>
+      <label>
+        <span>来校时间</span>
+        <input type="date" name="joinSchoolDate" value="<%= helpers.formatDate(teacher.joinSchoolDate) %>">
+      </label>
+      <label>
+        <span>在职状态</span>
+        <select name="employmentStatus">
+          <option value="">未填写</option>
+          <% ['在职','退休','借调'].forEach((st) => { %>
+            <option value="<%= st %>" <%= teacher.employmentStatus === st ? 'selected' : '' %>><%= st %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label>
+        <span>联系电话</span>
+        <input type="text" name="phone" value="<%= teacher.phone || '' %>">
+      </label>
+      <label>
+        <span>邮箱</span>
+        <input type="email" name="email" value="<%= teacher.email || '' %>">
+      </label>
+      <label class="wide">
+        <span>免冠照片（可选）</span>
+        <input type="file" name="photo" accept="image/*">
+      </label>
+      <div class="wide action-row">
+        <button type="submit" class="primary-button">保存档案</button>
+        <a class="ghost-button" href="/achievements<%= isAdminView ? ('?teacherId=' + teacher.id) : '' %>">查看业绩 →</a>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Credentials</p>
+        <h2>证书与资质</h2>
+      </div>
+      <p class="muted">职称证 / 教资证 / 双师型证书 / 学历学位证等，可上传扫描件留存。</p>
+    </div>
+
+    <% if (!credentials.length) { %>
+      <div class="empty-state">还没有登记证书，请在下方添加。</div>
+    <% } else { %>
+      <div class="list-stack">
+        <% credentials.forEach((c) => { %>
+          <article class="list-card">
+            <div class="teacher-card-main">
+              <strong><span class="tag"><%= c.type %></span> <%= c.name || '' %></strong>
+              <p>
+                <% if (c.level) { %>等级：<%= c.level %> · <% } %>
+                <% if (c.certNo) { %>证号：<%= c.certNo %> · <% } %>
+                <% if (c.issuer) { %><%= c.issuer %> · <% } %>
+                <% if (c.issuedOn) { %><%= helpers.formatDate(c.issuedOn) %><% } %>
+                <% if (c.displayStoredName) { %> · 已传扫描件<% } %>
+              </p>
+            </div>
+            <div class="teacher-card-side">
+              <form method="post" action="/teacher-profile/credentials/<%= c.id %>/delete" onsubmit="return confirm('确认删除该证书吗？');">
+                <button type="submit" class="danger-button">删除</button>
+              </form>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <form method="post" action="/teacher-profile/credentials<%= isAdminView ? ('?teacherId=' + teacher.id) : '' %>" enctype="multipart/form-data" class="grid-form credential-form">
+      <% if (isAdminView) { %><input type="hidden" name="teacherId" value="<%= teacher.id %>"><% } %>
+      <label>
+        <span>证书类型 *</span>
+        <select name="type" required>
+          <option value="">请选择</option>
+          <% credentialTypes.forEach((t) => { %>
+            <option value="<%= t %>"><%= t %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label>
+        <span>证书名称</span>
+        <input type="text" name="name" placeholder="如：高级工程师">
+      </label>
+      <label>
+        <span>等级</span>
+        <input type="text" name="level" placeholder="如：高级（双师）">
+      </label>
+      <label>
+        <span>证书编号</span>
+        <input type="text" name="certNo">
+      </label>
+      <label>
+        <span>发证机关</span>
+        <input type="text" name="issuer">
+      </label>
+      <label>
+        <span>发证日期</span>
+        <input type="date" name="issuedOn">
+      </label>
+      <label class="wide">
+        <span>扫描件（可选）</span>
+        <input type="file" name="certFile" accept="image/*,.pdf">
+      </label>
+      <div class="wide action-row">
+        <button type="submit" class="primary-button">添加证书</button>
+      </div>
+    </form>
+  </section>
+</main>
+<%- include('../partials/footer') %>

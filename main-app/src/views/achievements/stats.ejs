@@ -1,0 +1,138 @@
+<%- include('../partials/head', { title }) %>
+<%- include('../partials/header') %>
+<%
+  var totalScore = Math.round((scoreByCategory.RESUME + scoreByCategory.TEACHING + scoreByCategory.RESEARCH) * 100) / 100;
+  function maxOf(obj) { var v = Object.values(obj); return v.length ? Math.max.apply(null, v) : 0; }
+  var catMax = maxOf(byCategory) || 1;
+  var levelMax = maxOf(byLevel) || 1;
+  var yearMax = maxOf(byYear) || 1;
+  var scoreMax = Math.max(scoreByCategory.RESUME, scoreByCategory.TEACHING, scoreByCategory.RESEARCH, 1);
+%>
+<main class="page-shell">
+  <%- include('../partials/flash') %>
+
+  <section class="section-head">
+    <div>
+      <p class="eyebrow">Dashboard</p>
+      <h1>数据统计看板</h1>
+      <p class="muted"><%= isAdmin ? '全院教师业绩统计' : '本人业绩统计' %></p>
+    </div>
+    <a class="ghost-button" href="/achievements">← 返回业绩</a>
+  </section>
+
+  <section class="score-overview">
+    <div class="score-card score-card-total">
+      <span class="score-card-label">业绩总条数</span>
+      <strong class="score-card-value"><%= totalCount %></strong>
+      <span class="score-card-hint">已认定 <%= verifiedCount %> 条</span>
+    </div>
+    <div class="score-card score-card-resume">
+      <span class="score-card-label">资历类得分</span>
+      <strong class="score-card-value"><%= scoreByCategory.RESUME %></strong>
+    </div>
+    <div class="score-card score-card-teaching">
+      <span class="score-card-label">教学类得分</span>
+      <strong class="score-card-value"><%= scoreByCategory.TEACHING %></strong>
+    </div>
+    <div class="score-card score-card-research">
+      <span class="score-card-label">科研类得分</span>
+      <strong class="score-card-value"><%= scoreByCategory.RESEARCH %></strong>
+    </div>
+  </section>
+
+  <section class="grid-two">
+    <div class="panel">
+      <div class="section-head"><div><p class="eyebrow">By Category</p><h2>各类目业绩条数</h2></div></div>
+      <div class="bar-chart">
+        <% constants.CATEGORY_ORDER.forEach((cat) => { %>
+          <div class="bar-row">
+            <span class="bar-label"><%= constants.CATEGORY_LABELS[cat] %></span>
+            <div class="bar-track">
+              <div class="bar-fill bar-<%= cat.toLowerCase() %>" style="width: <%= Math.round((byCategory[cat] || 0) / catMax * 100) %>%"></div>
+            </div>
+            <span class="bar-value"><%= byCategory[cat] || 0 %></span>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="section-head"><div><p class="eyebrow">By Score</p><h2>各类目量化得分</h2></div></div>
+      <div class="bar-chart">
+        <% constants.CATEGORY_ORDER.forEach((cat) => { %>
+          <div class="bar-row">
+            <span class="bar-label"><%= constants.CATEGORY_LABELS[cat] %></span>
+            <div class="bar-track">
+              <div class="bar-fill bar-<%= cat.toLowerCase() %>" style="width: <%= Math.round((scoreByCategory[cat] || 0) / scoreMax * 100) %>%"></div>
+            </div>
+            <span class="bar-value"><%= scoreByCategory[cat] || 0 %></span>
+          </div>
+        <% }) %>
+        <div class="bar-total-line">合计 <strong><%= totalScore %></strong> 分</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="section-head"><div><p class="eyebrow">By Level</p><h2>按级别分布</h2></div></div>
+      <div class="bar-chart">
+        <% constants.LEVEL_ORDER.forEach((lv) => { %>
+          <div class="bar-row">
+            <span class="bar-label"><%= constants.LEVEL_LABELS[lv] %></span>
+            <div class="bar-track">
+              <div class="bar-fill bar-gold" style="width: <%= Math.round((byLevel[lv] || 0) / levelMax * 100) %>%"></div>
+            </div>
+            <span class="bar-value"><%= byLevel[lv] || 0 %></span>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="section-head"><div><p class="eyebrow">By Year</p><h2>按年度分布</h2></div></div>
+      <% if (!years.length) { %>
+        <div class="empty-state">暂无数据。</div>
+      <% } else { %>
+        <div class="bar-chart">
+          <% years.forEach((y) => { %>
+            <div class="bar-row">
+              <span class="bar-label"><%= y %> 年</span>
+              <div class="bar-track">
+                <div class="bar-fill bar-teal" style="width: <%= Math.round((byYear[y] || 0) / yearMax * 100) %>%"></div>
+              </div>
+              <span class="bar-value"><%= byYear[y] || 0 %></span>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+  </section>
+
+  <% if (isAdmin) { %>
+    <section class="panel">
+      <div class="section-head"><div><p class="eyebrow">Ranking</p><h2>教师业绩量化排行（Top 12）</h2></div></div>
+      <% if (!teacherRanking.length) { %>
+        <div class="empty-state">暂无教师业绩数据。</div>
+      <% } else { %>
+        <div class="table-wrap">
+          <table class="edit-table">
+            <thead>
+              <tr><th>排名</th><th>教师</th><th>工号</th><th>业绩条数</th><th>有效总分</th></tr>
+            </thead>
+            <tbody>
+              <% teacherRanking.forEach((t, i) => { %>
+                <tr>
+                  <td><%= i + 1 %></td>
+                  <td><%= t.name %></td>
+                  <td><%= t.employeeNo %></td>
+                  <td><%= t.count %></td>
+                  <td><strong><%= t.score %></strong></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </section>
+  <% } %>
+</main>
+<%- include('../partials/footer') %>

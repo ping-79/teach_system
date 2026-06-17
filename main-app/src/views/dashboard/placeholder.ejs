@@ -1,0 +1,19 @@
+<%- include('../partials/head', { title }) %>
+<%- include('../partials/header') %>
+<main class="page-shell compact">
+  <%- include('../partials/flash') %>
+
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Reserved</p>
+        <h1><%= moduleTitle %></h1>
+      </div>
+    </div>
+    <div class="empty-state">
+      <p><%= moduleCopy %></p>
+      <a class="primary-button" href="/dashboard">返回首页</a>
+    </div>
+  </section>
+</main>
+<%- include('../partials/footer') %>

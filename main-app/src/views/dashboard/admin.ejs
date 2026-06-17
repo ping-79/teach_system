@@ -1,0 +1,83 @@
+<%- include('../partials/head', { title }) %>
+<%- include('../partials/header') %>
+<main class="page-shell">
+  <%- include('../partials/flash') %>
+  <section class="hero-panel">
+    <div>
+      <p class="eyebrow">Admin</p>
+      <h1>教学进度计划表生成系统</h1>
+      <p>管理员可在这里查看教师账号、系统数据以及资料库授课内容更新申请。</p>
+    </div>
+    <div class="hero-metrics">
+      <div class="metric-card">
+        <span>教师账号</span>
+        <strong><%= stats.teacherCount %></strong>
+      </div>
+      <div class="metric-card">
+        <span>学期记录</span>
+        <strong><%= stats.semesterCount %></strong>
+      </div>
+      <div class="metric-card">
+        <span>课程卡片</span>
+        <strong><%= stats.offeringCount %></strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Requests</p>
+        <h2>资料库授课内容更新申请</h2>
+      </div>
+    </div>
+
+    <% if (!pendingLibraryUpdateRequests.length) { %>
+      <div class="empty-state success">当前没有待审批的资料库更新申请。</div>
+    <% } else { %>
+      <div class="list-stack">
+        <% pendingLibraryUpdateRequests.forEach((item) => { %>
+          <article class="list-card teacher-card">
+            <div class="teacher-card-main">
+              <strong><%= item.offering.courseName %>（<%= item.offering.className %>）</strong>
+              <p><%= item.teacher.name %> · <%= helpers.formatDate(item.requestedAt, 'YYYY-MM-DD HH:mm') %></p>
+            </div>
+            <div class="teacher-card-side">
+              <span class="teacher-status">待审批</span>
+              <div class="teacher-actions">
+                <form method="post" action="/admin/library-update-requests/<%= item.id %>/approve">
+                  <button type="submit" class="primary-button">同意</button>
+                </form>
+                <form method="post" action="/admin/library-update-requests/<%= item.id %>/reject">
+                  <button type="submit" class="danger-button">拒绝</button>
+                </form>
+              </div>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Teachers</p>
+        <h2>最近教师账号</h2>
+      </div>
+      <a class="primary-button" href="/admin/teachers">进入账号管理</a>
+    </div>
+    <div class="list-stack">
+      <% teachers.forEach((teacher) => { %>
+        <div class="list-card">
+          <div>
+            <strong><%= teacher.name %>（<%= teacher.employeeNo %>）</strong>
+            <p><%= teacher.college %></p>
+          </div>
+          <span><%= teacher.user ? '已开通' : '未开通' %></span>
+        </div>
+      <% }) %>
+    </div>
+  </section>
+</main>
+<%- include('../partials/footer') %>

@@ -1,0 +1,82 @@
+<%- include('../partials/head', { title }) %>
+<%- include('../partials/header') %>
+<main class="page-shell">
+  <%- include('../partials/flash') %>
+  <section class="hero-panel">
+    <div>
+      <p class="eyebrow">Semester</p>
+      <h1><%= semester.schoolYear %> 第 <%= semester.termNumber %> 学期</h1>
+      <p>正式上课第一天：<%= helpers.formatDate(semester.teachingStartDate) %>，请先导入老师本学期课表。</p>
+    </div>
+    <div class="hero-metrics">
+      <div class="metric-card">
+        <span>课表导入次数</span>
+        <strong><%= semester.timetableImports.length %></strong>
+      </div>
+      <div class="metric-card">
+        <span>课程卡片</span>
+        <strong><%= offerings.length %></strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid-two">
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Import</p>
+          <h2>上传教师课表</h2>
+        </div>
+      </div>
+      <% if (currentUser.role === 'teacher') { %>
+        <form method="post" action="/semesters/<%= semester.id %>/timetable-imports" enctype="multipart/form-data" class="stack-form">
+          <label>
+            <span>课表文件（.xls / .xlsx）</span>
+            <input type="file" name="timetableFile" accept=".xls,.xlsx" required>
+          </label>
+          <button type="submit" class="primary-button">导入并生成课程卡片</button>
+        </form>
+      <% } else { %>
+        <div class="empty-state">管理员可查看导入记录与课程卡片，教师请使用自己的账号上传课表。</div>
+      <% } %>
+      <div class="list-stack top-gap">
+        <% semester.timetableImports.forEach((record) => { %>
+          <div class="list-card">
+            <div>
+              <strong><%= record.displaySourceFilename || record.sourceFilename %></strong>
+              <p><%= helpers.formatDate(record.createdAt, 'YYYY-MM-DD HH:mm') %> · <%= record.rawSummary || '已导入' %></p>
+            </div>
+            <span><%= record.teacher?.name || '当前教师' %></span>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Offerings</p>
+          <h2>课程卡片</h2>
+        </div>
+      </div>
+      <% if (!offerings.length) { %>
+        <div class="empty-state">导入课表后，这里会自动生成课程 + 教学班的填报入口。</div>
+      <% } else { %>
+        <div class="offering-grid">
+          <% offerings.forEach((offering) => { %>
+            <article class="offering-card">
+              <h3><%= offering.courseName %></h3>
+              <p><strong>教学班：</strong><%= offering.className %></p>
+              <p><strong>总学时：</strong><%= offering.courseTotalHours || '待确认' %></p>
+              <div class="action-row">
+                <a class="primary-button" href="/offerings/<%= offering.id %>/teaching-plan">教学进度计划表</a>
+                <a class="ghost-button" href="/offerings/<%= offering.id %>/practice-plan">实践进度计划表</a>
+              </div>
+            </article>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+  </section>
+</main>
+<%- include('../partials/footer') %>

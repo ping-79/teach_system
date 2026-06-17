@@ -1,0 +1,466 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  teacher
+}
+
+enum SemesterStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum ParseStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum ContentLibraryStatus {
+  DRAFT
+  ACTIVE
+}
+
+enum PlanType {
+  teaching
+  practice
+}
+
+enum PlanStatus {
+  DRAFT
+  READY
+}
+
+enum TeachingMode {
+  theory
+  practice
+  mixed
+}
+
+enum AiTaskType {
+  CONTENT_PARSE
+  PLAN_REVIEW
+  ACHIEVEMENT_OCR
+  ACHIEVEMENT_PARSE
+  PERFORMANCE_SUMMARY
+}
+
+enum AiTaskStatus {
+  SUCCESS
+  FAILED
+  SKIPPED
+}
+
+enum LibraryUpdateRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AchievementCategory {
+  RESUME
+  TEACHING
+  RESEARCH
+}
+
+enum AchievementLevel {
+  NATIONAL
+  PROVINCIAL
+  MUNICIPAL
+  SCHOOL
+  NONE
+}
+
+enum AchievementRank {
+  SPECIAL
+  FIRST
+  SECOND
+  THIRD
+  NONE
+}
+
+enum AchievementReviewStatus {
+  DRAFT
+  SUBMITTED
+  PRELIM_REVIEWED
+  FINAL_REVIEWED
+  REJECTED
+}
+
+enum OcrStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  SKIPPED
+}
+
+enum ScoringApplyType {
+  TITLE
+  POST
+}
+
+enum ScoringScoreType {
+  FIXED
+  PER_UNIT
+  LOOKUP
+}
+
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  REVIEWING
+  APPROVED
+  RETURNED
+}
+
+model User {
+  id                Int             @id @default(autoincrement())
+  username          String          @unique
+  passwordHash      String
+  role              UserRole
+  mustChangePassword Boolean        @default(true)
+  teacherProfileId  Int?            @unique
+  teacherProfile    TeacherProfile? @relation(fields: [teacherProfileId], references: [id])
+  requestedLibraryUpdates LibraryUpdateRequest[] @relation("RequestedByUser")
+  reviewedLibraryUpdates  LibraryUpdateRequest[] @relation("ReviewedByUser")
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+model TeacherProfile {
+  id               Int                   @id @default(autoincrement())
+  employeeNo       String                @unique
+  name             String
+  college          String
+
+  // 业绩模块扩展（均可空，不影响现有功能）
+  gender            String?    // 性别
+  birthDate         DateTime?  // 出生年月（用于年龄统计）
+  politicalStatus   String?    // 政治面貌
+  department        String?    // 教研室
+  major             String?    // 所属专业
+  highestEducation  String?    // 最高学历
+  highestDegree     String?    // 最高学位
+  titleName         String?    // 职称（助教/讲师/副教授/教授）
+  postLevel         String?    // 岗位等级（如 副高七级）
+  titleDate         DateTime?  // 职称评定时间
+  duty              String?    // 职务/行政
+  workStartDate     DateTime?  // 参加工作时间 → 工龄
+  joinSchoolDate    DateTime?  // 来校时间 → 校龄
+  doubleQualLevel   String?    // 双师型等级（初级/中级/高级/无）
+  phone             String?
+  email             String?
+  photoPath         String?    // 照片
+  employmentStatus  String?    // 在职/退休/借调
+
+  user             User?
+  timetableImports TimetableImport[]
+  timetableSessions TimetableSession[]
+  offerings        CourseOffering[]
+  libraries        CourseContentLibrary[]
+  aiTasks          AiTaskLog[]
+  libraryUpdateRequests LibraryUpdateRequest[]
+  credentials      Credential[]
+  achievements     Achievement[]
+  applications     TitleApplication[]
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+}
+
+model Semester {
+  id               Int               @id @default(autoincrement())
+  schoolYear       String
+  termNumber       Int
+  teachingStartDate DateTime
+  status           SemesterStatus    @default(ACTIVE)
+  timetableImports TimetableImport[]
+  timetableSessions TimetableSession[]
+  offerings        CourseOffering[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@unique([schoolYear, termNumber])
+}
+
+model TimetableImport {
+  id             Int           @id @default(autoincrement())
+  semesterId     Int
+  teacherId      Int
+  sourceFilename String
+  storedPath     String
+  parseStatus    ParseStatus   @default(PENDING)
+  rawSummary     String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  semester       Semester      @relation(fields: [semesterId], references: [id])
+  teacher        TeacherProfile @relation(fields: [teacherId], references: [id])
+  sessions       TimetableSession[]
+}
+
+model TimetableSession {
+  id               Int            @id @default(autoincrement())
+  importId         Int
+  teacherId        Int
+  semesterId       Int
+  courseName       String
+  normalizedCourseName String
+  className        String
+  weekday          Int
+  weekdayLabel     String
+  periodText       String
+  weekRuleRaw      String
+  campus           String?
+  location         String?
+  studentCount     Int?
+  courseTotalHours Int?
+  rawCellText      String
+  isPracticeHint   Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  timetableImport  TimetableImport @relation(fields: [importId], references: [id])
+  teacher          TeacherProfile @relation(fields: [teacherId], references: [id])
+  semester         Semester       @relation(fields: [semesterId], references: [id])
+}
+
+model CourseOffering {
+  id               Int                 @id @default(autoincrement())
+  teacherId        Int
+  semesterId       Int
+  courseName       String
+  normalizedCourseName String
+  className        String
+  courseTotalHours Int?
+  sourceImportId   Int?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  teacher          TeacherProfile      @relation(fields: [teacherId], references: [id])
+  semester         Semester            @relation(fields: [semesterId], references: [id])
+  plans            PlanDocument[]
+  libraryUpdateRequests LibraryUpdateRequest[]
+
+  @@unique([teacherId, semesterId, normalizedCourseName, className])
+}
+
+model CourseContentLibrary {
+  id               Int                  @id @default(autoincrement())
+  teacherId        Int
+  courseName       String
+  normalizedCourseName String
+  sourceFilename   String
+  sourceStoredPath String?
+  extractedText    String?
+  draftItemsJson   String?
+  status           ContentLibraryStatus @default(DRAFT)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  teacher          TeacherProfile       @relation(fields: [teacherId], references: [id])
+  items            CourseContentItem[]
+
+  @@unique([teacherId, normalizedCourseName])
+}
+
+model CourseContentItem {
+  id             Int                @id @default(autoincrement())
+  libraryId      Int
+  sortOrder      Int
+  topicTitle     String
+  suggestedHours Float?
+  theoryHours    Float?
+  practiceHours  Float?
+  mode           TeachingMode       @default(theory)
+  notes          String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  library        CourseContentLibrary @relation(fields: [libraryId], references: [id], onDelete: Cascade)
+}
+
+model PlanDocument {
+  id             Int          @id @default(autoincrement())
+  offeringId     Int
+  type           PlanType
+  status         PlanStatus   @default(DRAFT)
+  totalHours     Float?
+  theoryHours    Float?
+  practiceHours  Float?
+  weeklyHours    Float?
+  metadataJson   String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  offering       CourseOffering @relation(fields: [offeringId], references: [id], onDelete: Cascade)
+  rows           PlanRow[]
+
+  @@unique([offeringId, type])
+}
+
+model PlanRow {
+  id            Int          @id @default(autoincrement())
+  documentId    Int
+  sortOrder     Int
+  weekIndex     Int?
+  dateText      String?
+  periodText    String?
+  topicText     String?
+  hours         Float?
+  mode          TeachingMode @default(theory)
+  theoryHours   Float?
+  practiceHours Float?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  document      PlanDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+}
+
+model AiTaskLog {
+  id            Int           @id @default(autoincrement())
+  teacherId      Int?
+  taskType      AiTaskType
+  status        AiTaskStatus
+  inputSummary  String?
+  outputSummary String?
+  errorMessage  String?
+  createdAt     DateTime      @default(now())
+  teacher       TeacherProfile? @relation(fields: [teacherId], references: [id])
+}
+
+model LibraryUpdateRequest {
+  id               Int                        @id @default(autoincrement())
+  offeringId       Int
+  teacherId        Int
+  requestedByUserId Int?
+  reviewedByUserId Int?
+  status           LibraryUpdateRequestStatus @default(PENDING)
+  sourceFilename   String?
+  snapshotJson     String
+  note             String?
+  requestedAt      DateTime                   @default(now())
+  reviewedAt       DateTime?
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+  offering         CourseOffering             @relation(fields: [offeringId], references: [id], onDelete: Cascade)
+  teacher          TeacherProfile             @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  requestedBy      User?                      @relation("RequestedByUser", fields: [requestedByUserId], references: [id], onDelete: SetNull)
+  reviewedBy       User?                      @relation("ReviewedByUser", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+}
+
+model Credential {
+  id          Int       @id @default(autoincrement())
+  teacherId   Int
+  type        String    // 职称证 / 教师资格证 / 双师型证书 / 学历证 / 学位证
+  name        String?
+  certNo      String?   // 证书编号
+  issuer      String?   // 发证机关
+  issuedOn    DateTime?
+  level       String?   // 如双师：初级/中级/高级
+  storedPath  String?   // 扫描件
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  teacher     TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@index([teacherId])
+}
+
+model Achievement {
+  id            Int      @id @default(autoincrement())
+  teacherId     Int
+  year          Int                  // 业绩年度（按年归档）
+  category      AchievementCategory
+  subType       String               // 子类
+  scoringItemId Int?                 // 命中的评分细则项（用于自动算分）
+
+  title         String               // 业绩名称/题目
+  level         AchievementLevel @default(NONE)
+  rank          AchievementRank  @default(NONE)
+  rankLabel     String?              // 原始等次文字（如"一等奖"）
+  authorOrder   Int?                 // 本人排序（→系数）
+  authorRole    String?              // 主持/第X参与人/通讯作者
+  happenedOn    DateTime?            // 取得/发表/授权/结题日期
+  selfDescription String?            // 自评描述
+
+  detailJson    String?              // 类型专属字段
+
+  computedScore Float?               // 系统按规则自动算
+  selfScore     Float?               // 自评得分
+  prelimScore   Float?               // 初步复核得分
+  finalScore    Float?               // 最终复核得分
+  reviewDept    String?              // 负责复核部门
+  reviewStatus  AchievementReviewStatus @default(DRAFT)
+  reviewNote    String?
+  verified      Boolean  @default(false)  // 已认定
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  teacher     TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  scoringItem ScoringItem?   @relation(fields: [scoringItemId], references: [id], onDelete: SetNull)
+  attachments AchievementAttachment[]
+
+  @@index([teacherId, year, category])
+}
+
+model AchievementAttachment {
+  id            Int      @id @default(autoincrement())
+  achievementId Int
+  fileName      String
+  storedPath    String
+  ocrStatus     OcrStatus @default(PENDING)
+  ocrText       String?   // 识别文本（供 AI 结构化）
+  createdAt     DateTime @default(now())
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@index([achievementId])
+}
+
+model ScoringScheme {
+  id        Int      @id @default(autoincrement())
+  name      String   // 如"2024 职称申报量化评分办法"
+  applyType ScoringApplyType
+  policyNo  String?  // 文号
+  year      Int?
+  isActive  Boolean  @default(true)
+  items     ScoringItem[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ScoringItem {
+  id           Int      @id @default(autoincrement())
+  schemeId     Int
+  category     AchievementCategory
+  code         String   // 评分表编号，如 2-6
+  name         String   // 评分项名称
+  capGroupCode String?  // 限分组
+  maxScore     Float?   // 该项封顶
+  scoreType    ScoringScoreType
+  configJson   String   // 级别×等次→分值表、排序系数表等
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  scheme       ScoringScheme @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+  achievements Achievement[]
+
+  @@unique([schemeId, code])
+}
+
+model TitleApplication {
+  id             Int      @id @default(autoincrement())
+  teacherId      Int
+  schemeId       Int?
+  applyType      ScoringApplyType
+  applyLevel     String?  // 申报级别
+  year           Int
+  status         ApplicationStatus @default(DRAFT)
+  totalSelfScore Float?
+  totalFinalScore Float?
+  snapshotJson   String?  // 提交时冻结的业绩+得分快照
+  submittedAt    DateTime?
+  reviewedAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  teacher        TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@index([teacherId, year])
+}

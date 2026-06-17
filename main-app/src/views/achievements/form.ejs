@@ -1,0 +1,200 @@
+<%- include('../partials/head', { title }) %>
+<%- include('../partials/header') %>
+<%
+  // 统一解析当前字段值：编辑 > OCR预填 > 默认
+  var a = achievement || {};
+  var p = prefill || {};
+  var curCategory = (a.category) || (typeof category !== 'undefined' ? category : '') || 'RESEARCH';
+  var curSubType = (a.subType) || (typeof subType !== 'undefined' ? subType : '') || '';
+  var curTitle = a.title || p.title || '';
+  var curLevel = a.level || p.level || 'NONE';
+  var curRank = a.rank || p.rank || 'NONE';
+  var curRankLabel = a.rankLabel || p.rankLabel || '';
+  var curAuthorOrder = (a.authorOrder != null ? a.authorOrder : (p.authorOrder != null ? p.authorOrder : ''));
+  var curAuthorRole = a.authorRole || p.authorRole || '';
+  var curYear = a.year || new Date().getFullYear();
+  var curHappenedOn = a.happenedOn ? helpers.formatDate(a.happenedOn) : (p.happenedOn || '');
+  var curSelfDesc = a.selfDescription || '';
+  var curSelfScore = (a.selfScore != null ? a.selfScore : '');
+  var curDetail = a.detail || p.detail || {};
+  var isEdit = Boolean(achievement);
+  var formAction = isEdit ? ('/achievements/' + a.id) : '/achievements';
+  var prefilled = Boolean(prefill);
+%>
+<main class="page-shell">
+  <%- include('../partials/flash') %>
+
+  <section class="section-head">
+    <div>
+      <p class="eyebrow"><%= isEdit ? 'Edit' : 'New' %> Achievement</p>
+      <h1><%= isEdit ? '编辑业绩' : '录入业绩' %></h1>
+      <% if (prefilled) { %>
+        <p class="muted">已根据扫描件智能预填，高亮字段请<strong>核对后再保存</strong>（系统不会盲信识别结果）。</p>
+      <% } else { %>
+        <p class="muted">可先上传佐证扫描件智能预填，或直接手动填写。</p>
+      <% } %>
+    </div>
+    <a class="ghost-button" href="/achievements<%= teacherIdParam %>">← 返回业绩列表</a>
+  </section>
+
+  <% if (!isEdit) { %>
+    <!-- OCR / AI 智能预填 -->
+    <section class="panel ocr-panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Step 1 · 智能预填（可选）</p>
+          <h2>上传佐证扫描件</h2>
+        </div>
+        <p class="muted">
+          <% if (ocrConfigured) { %>
+            支持图片/PDF/Word，识别后自动填入下方表单。
+          <% } else { %>
+            当前未配置云 OCR：图片/PDF 需手填；Word/文本可自动读取。原件始终留存为佐证。
+          <% } %>
+        </p>
+      </div>
+      <form method="post" action="/achievements/ocr-prefill<%= teacherIdParam %>" enctype="multipart/form-data" class="ocr-form">
+        <% if (typeof teacherId !== 'undefined' && teacherIdParam) { %><input type="hidden" name="teacherId" value="<%= teacherId %>"><% } %>
+        <div class="ocr-form-row">
+          <label>
+            <span>业绩大类</span>
+            <select name="category">
+              <% constants.CATEGORY_ORDER.forEach((cat) => { %>
+                <option value="<%= cat %>" <%= curCategory === cat ? 'selected' : '' %>><%= constants.CATEGORY_LABELS[cat] %></option>
+              <% }) %>
+            </select>
+          </label>
+          <label>
+            <span>子类</span>
+            <input type="text" name="subType" value="<%= curSubType %>" placeholder="如：教师教学竞赛">
+          </label>
+          <label class="ocr-file-field">
+            <span>佐证扫描件</span>
+            <input type="file" name="evidence" accept="image/*,.pdf,.docx,.txt" required>
+          </label>
+        </div>
+        <button type="submit" class="ghost-button">识别并预填 ↓</button>
+      </form>
+    </section>
+  <% } %>
+
+  <!-- 业绩信息表单 -->
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow"><%= isEdit ? 'Details' : 'Step 2 · 确认信息' %></p>
+        <h2>业绩信息</h2>
+      </div>
+      <p class="muted">级别+等次+本人排序将用于系统建议分；自评分可手动调整。</p>
+    </div>
+
+    <form method="post" action="<%= formAction %>" class="grid-form ach-form">
+      <% if (typeof teacherId !== 'undefined' && teacherIdParam) { %><input type="hidden" name="teacherId" value="<%= teacherId %>"><% } %>
+
+      <label>
+        <span>业绩大类 *</span>
+        <select name="category" id="ach-category" required>
+          <% constants.CATEGORY_ORDER.forEach((cat) => { %>
+            <option value="<%= cat %>" <%= curCategory === cat ? 'selected' : '' %>><%= constants.CATEGORY_LABELS[cat] %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label>
+        <span>子类</span>
+        <select name="subType" id="ach-subtype">
+          <% constants.CATEGORY_ORDER.forEach((cat) => { %>
+            <optgroup label="<%= constants.CATEGORY_LABELS[cat] %>" data-cat="<%= cat %>">
+              <% constants.SUBTYPES[cat].forEach((st) => { %>
+                <option value="<%= st %>" data-cat="<%= cat %>" <%= curSubType === st ? 'selected' : '' %>><%= st %></option>
+              <% }) %>
+            </optgroup>
+          <% }) %>
+        </select>
+      </label>
+      <label class="wide <%= (prefilled && p.title) ? 'prefilled' : '' %>">
+        <span>业绩名称 / 题目 *</span>
+        <input type="text" name="title" value="<%= curTitle %>" required placeholder="如：全国职业院校技能大赛教学能力比赛">
+      </label>
+      <label class="<%= (prefilled && p.level && p.level !== 'NONE') ? 'prefilled' : '' %>">
+        <span>级别</span>
+        <select name="level">
+          <% constants.LEVEL_ORDER.forEach((lv) => { %>
+            <option value="<%= lv %>" <%= curLevel === lv ? 'selected' : '' %>><%= constants.LEVEL_LABELS[lv] %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label class="<%= (prefilled && p.rank && p.rank !== 'NONE') ? 'prefilled' : '' %>">
+        <span>等次</span>
+        <select name="rank">
+          <% constants.RANK_ORDER.forEach((rk) => { %>
+            <option value="<%= rk %>" <%= curRank === rk ? 'selected' : '' %>><%= constants.RANK_LABELS[rk] %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label class="<%= (prefilled && p.rankLabel) ? 'prefilled' : '' %>">
+        <span>原始等次文字</span>
+        <input type="text" name="rankLabel" value="<%= curRankLabel %>" placeholder="如：一等奖">
+      </label>
+      <label class="<%= (prefilled && p.authorOrder) ? 'prefilled' : '' %>">
+        <span>本人排序</span>
+        <input type="number" name="authorOrder" min="1" value="<%= curAuthorOrder %>" placeholder="如：1">
+      </label>
+      <label class="<%= (prefilled && p.authorRole) ? 'prefilled' : '' %>">
+        <span>本人角色</span>
+        <input type="text" name="authorRole" value="<%= curAuthorRole %>" placeholder="如：主持 / 第二完成人 / 通讯作者">
+      </label>
+      <label>
+        <span>业绩年度 *</span>
+        <input type="number" name="year" value="<%= curYear %>" required>
+      </label>
+      <label class="<%= (prefilled && p.happenedOn) ? 'prefilled' : '' %>">
+        <span>取得/发表/授权日期</span>
+        <input type="date" name="happenedOn" value="<%= curHappenedOn %>">
+      </label>
+      <label>
+        <span>自评分（留空则用系统建议）</span>
+        <input type="number" step="0.1" name="selfScore" value="<%= curSelfScore %>" placeholder="系统会按级别×等次×排序给建议分">
+      </label>
+      <label class="wide">
+        <span>补充说明 / 自评描述</span>
+        <textarea name="selfDescription" rows="3" placeholder="可补充期刊检索、课题来源经费、专利号、班级课时等信息"><%= curSelfDesc %></textarea>
+      </label>
+
+      <input type="hidden" name="detailJson" value='<%= JSON.stringify(curDetail) %>'>
+      <% if (typeof attachment !== 'undefined' && attachment) { %>
+        <input type="hidden" name="attachmentStoredPath" value="<%= attachment.storedPath %>">
+        <input type="hidden" name="attachmentFileName" value="<%= attachment.fileName %>">
+        <input type="hidden" name="attachmentOcrStatus" value="<%= attachment.ocrStatus %>">
+        <input type="hidden" name="attachmentOcrText" value="<%= attachment.ocrText %>">
+      <% } %>
+
+      <div class="wide action-row">
+        <button type="submit" class="primary-button"><%= isEdit ? '保存修改' : '保存业绩' %></button>
+        <a class="ghost-button" href="/achievements<%= teacherIdParam %>">取消</a>
+      </div>
+    </form>
+  </section>
+</main>
+<script>
+  (function () {
+    var catSel = document.getElementById('ach-category');
+    var subSel = document.getElementById('ach-subtype');
+    if (!catSel || !subSel) return;
+    function filterSub() {
+      var cat = catSel.value;
+      var groups = subSel.querySelectorAll('optgroup');
+      groups.forEach(function (g) {
+        g.style.display = g.getAttribute('data-cat') === cat ? '' : 'none';
+      });
+      // 若当前选中项不属于该大类，自动切到该大类第一个
+      var selected = subSel.options[subSel.selectedIndex];
+      if (!selected || selected.getAttribute('data-cat') !== cat) {
+        var first = subSel.querySelector('optgroup[data-cat="' + cat + '"] option');
+        if (first) first.selected = true;
+      }
+    }
+    catSel.addEventListener('change', filterSub);
+    filterSub();
+  })();
+</script>
+<%- include('../partials/footer') %>

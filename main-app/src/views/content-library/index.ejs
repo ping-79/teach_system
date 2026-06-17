@@ -1,0 +1,75 @@
+<%- include('../partials/head', { title }) %>
+<%- include('../partials/header') %>
+<main class="page-shell">
+  <%- include('../partials/flash') %>
+  <section class="grid-two">
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Import</p>
+          <h1>导入课程内容</h1>
+        </div>
+        <p>支持 `.docx`、`.xlsx`、`.xls`、`.txt`，会先按表格规则解析，再由 DeepSeek 补充兜底。</p>
+      </div>
+
+      <form method="post" action="/content-library/import" enctype="multipart/form-data" class="stack-form">
+        <% if (currentUser.role === 'admin') { %>
+          <label>
+            <span>归属教师</span>
+            <select name="teacherId" required>
+              <option value="">请选择教师</option>
+              <% teachers.forEach((teacher) => { %>
+                <option value="<%= teacher.id %>"><%= teacher.name %>（<%= teacher.employeeNo %>）</option>
+              <% }) %>
+            </select>
+          </label>
+        <% } %>
+
+        <label>
+          <span>课程名称</span>
+          <input type="text" name="courseName" placeholder="例如：城乡规划CAD" required>
+        </label>
+
+        <label>
+          <span>课程内容文件</span>
+          <input type="file" name="contentFile" accept=".docx,.xlsx,.xls,.txt" required>
+        </label>
+
+        <button type="submit" class="primary-button">上传并解析</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Library</p>
+          <h2>现有课程资料</h2>
+        </div>
+      </div>
+
+      <% if (!libraries.length) { %>
+        <div class="empty-state">还没有课程内容资料，上传后可用于自动填充教学进度计划表。</div>
+      <% } else { %>
+        <div class="list-stack">
+          <% libraries.forEach((library) => { %>
+            <article class="list-card library-card">
+              <div class="library-card-main">
+                <a class="library-link" href="/content-library/import/<%= library.id %>/review">
+                  <strong><%= library.courseName %></strong>
+                  <p><%= library.teacher?.name || currentUser.teacherProfile?.name %> · <%= library.items.length %> 条内容 · <%= library.displaySourceFilename %></p>
+                </a>
+              </div>
+              <div class="library-card-side">
+                <span class="status-pill"><%= library.status === 'ACTIVE' ? '已生效' : '待确认' %></span>
+                <form method="post" action="/content-library/<%= library.id %>/delete" onsubmit="return confirm('确认删除这门课程资料吗？');">
+                  <button type="submit" class="danger-button">删除</button>
+                </form>
+              </div>
+            </article>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+  </section>
+</main>
+<%- include('../partials/footer') %>

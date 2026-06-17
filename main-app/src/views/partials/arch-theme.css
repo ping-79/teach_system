@@ -1,0 +1,110 @@
+/* =========================================
+   SYS.ARCH // 全局建筑图纸主题样式
+   ========================================= */
+
+:root {
+    --apple-font: "SF Pro Text", "SF Pro Icons", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+    --bg-color: #000000;
+    --text-color: #f5f5f7;
+    --link-color: #0066cc;
+    
+    /* 图纸背景参数 */
+    --grid-minor: rgba(255, 255, 255, 0.05);
+    --grid-major: rgba(255, 255, 255, 0.1);
+    --draft-line: rgba(255, 255, 255, 0.1);
+}
+
+/* --- 1. 全局图纸背景 --- */
+body.arch-theme {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--apple-font);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    -webkit-font-smoothing: antialiased;
+    
+    background-image: 
+        /* 顶部柔和打光 */
+        radial-gradient(circle at 50% 0%, rgba(40,40,40,1) 0%, transparent 80%),
+        /* 圆规辅助圆弧 */
+        radial-gradient(circle at 85% 15%, transparent 350px, var(--draft-line) 351px, transparent 352px),
+        radial-gradient(circle at 85% 15%, transparent 550px, var(--draft-line) 551px, transparent 552px),
+        /* 垂直中轴线 */
+        linear-gradient(90deg, transparent calc(50% - 0.5px), rgba(255, 255, 255, 0.15) calc(50% - 0.5px), rgba(255, 255, 255, 0.15) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+        /* 测绘网格 */
+        linear-gradient(var(--grid-minor) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-minor) 1px, transparent 1px),
+        linear-gradient(var(--grid-major) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-major) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+    background-position: center top;
+    background-attachment: fixed;
+}
+
+/* --- 2. 建筑感图框卡片 (供登录页、内容页使用) --- */
+.arch-card {
+    position: relative;
+    width: 100%;
+    max-width: 480px; /* 登录框默认宽度 */
+    margin: 40px auto;
+    padding: 64px 48px;
+    background: #111111;
+    border: 2px solid rgba(255,255,255,0.8);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+.arch-card::before {
+    content: '';
+    position: absolute;
+    top: 8px; left: 8px; right: 8px; bottom: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+}
+
+/* --- 3. 极客风按钮 --- */
+.arch-btn {
+    display: inline-block;
+    width: 100%;
+    padding: 14px 28px;
+    background-color: #ffffff;
+    color: #000000;
+    border: none;
+    border-radius: 4px;
+    font-size: 17px;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.arch-btn:hover {
+    background-color: #e5e5e5;
+}
+
+/* --- 4. 建筑图纸风格表单输入框 (为 Login 页准备) --- */
+.arch-form-group {
+    margin-bottom: 24px;
+    text-align: left;
+}
+.arch-form-group label {
+    display: block;
+    font-family: "SF Mono", monospace;
+    font-size: 12px;
+    color: #86868b;
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+}
+.arch-input {
+    width: 100%;
+    padding: 14px 16px;
+    background-color: #000000;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #f5f5f7;
+    font-family: var(--apple-font);
+    font-size: 16px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+.arch-input:focus {
+    border-color: #ffffff;
+}

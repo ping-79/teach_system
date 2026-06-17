@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Environment variables (contains API keys and secrets — NEVER commit)
+.env
+.env.local
+.env.*.local
+
+# Database & uploaded files
+main-app/data/teaching_materials.db
+main-app/data/exports/
+main-app/data/uploads/
+
+# Build output
+jiaoan/dist/
+jiaoan/output/
+jiaoan/tmp/
+jiaoan/000教案文档/
+
+# Duplicate folder
+新建文件夹/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
