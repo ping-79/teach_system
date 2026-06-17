@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "$json = [Console]::In.ReadToEnd(); $title = try { ($json | ConvertFrom-Json).title } catch { '任务完成' }; if (-not $title) { $title = '任务完成' }; Set-Location 'D:\\Desktop\\works\\服务器部署'; $status = git status --porcelain; if ($status) { git add .; git commit -m \"完成: $title\" } 2>$null",
+            "statusMessage": "自动提交代码...",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
