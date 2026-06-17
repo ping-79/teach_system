@@ -1,7 +1,8 @@
-﻿# Database backup settings.
-# Set this to your NAS or backup directory, for example:
-# $BackupDest = '\\192.168.1.10\backup\teaching'
-# $BackupDest = 'Z:\teaching-backup'
+﻿# 备份设置
+# $BackupDest：填【本机的一个备份文件夹】，不要直接写 NAS。例如：
+#   $BackupDest = 'D:\db-backups'
+# 异地容灾：再用群晖 Active Backup for Business / Synology Drive
+#   把这个文件夹同步到 NAS（详见 README-数据库备份.md）。
 $BackupDest = ''
 $RetentionDays = 30
 

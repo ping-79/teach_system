@@ -1,10 +1,8 @@
 ﻿$TaskName = 'TeachingDbBackup'
 $RunTime = '03:00'
 # 计划任务以哪个账户运行：
-#   'SYSTEM' 仅适合"备份到本机另一块硬盘"。
-#   备份到 NAS / 网络共享时，SYSTEM 账户访问不了网络共享，备份会失败！
-#   此时必须改成一个对 NAS 有访问权限的用户账户（形如 '计算机名\用户名' 或 '域\用户名'），
-#   注册带密码的计划任务请见 README-数据库备份.md 的说明。
+#   本方案中备份只写到【本机文件夹】（异地同步到 NAS 由群晖工具负责），
+#   所以默认 'SYSTEM' 即可，无需配置账户密码。
 $RunAsUser = 'SYSTEM'
 
 $ErrorActionPreference = 'Stop'

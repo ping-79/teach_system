@@ -13,11 +13,11 @@
 编辑 `ops\backup-database.ps1` 顶部配置：
 
 ```powershell
-$BackupDest = '\\192.168.1.10\backup\teaching'
+$BackupDest = 'D:\db-backups'   # 本机的备份文件夹（不要直接写 NAS）
 $RetentionDays = 30
 ```
 
-`$BackupDest` 可以是 UNC 路径，也可以是映射盘路径，例如 `Z:\teaching-backup`。如果 `$BackupDest` 为空，脚本会记录日志并正常退出，不会执行备份。
+`$BackupDest` 请填**服务器本机的一个文件夹**（异地同步到 NAS 由群晖工具负责，见下文「异地备份到 NAS」）。如果 `$BackupDest` 为空，脚本会记录日志并正常退出，不会执行备份。
 
 ## 手动运行
 
@@ -57,16 +57,19 @@ powershell.exe -ExecutionPolicy Bypass -File "<ops\backup-database.ps1>"
 
 如需修改时间，编辑 `ops\register-backup-task.ps1` 顶部的 `$RunTime`。
 
-## NAS 权限说明
+## 异地备份到 NAS（两层方案）
 
-默认定时任务使用 `SYSTEM` 账户运行。`SYSTEM` 通常不能访问需要用户名密码的 NAS 共享，也不一定能看到当前用户映射的盘符。
+本系统的服务器与 NAS 不在同一局域网，通过外网（域名 `aigc.i234.me`）相连，且 NAS 未开放 SMB（445 端口），因此采用两层备份：
 
-推荐做法：
+- **第一层（本脚本负责）**：每天用 VACUUM INTO 在**服务器本机**生成干净的备份文件，存到 `$BackupDest` 指向的本地文件夹。这一层不依赖网络，永远可用。
+- **第二层（群晖工具负责）**：用 NAS 自带的 **Active Backup for Business** 或 **Synology Drive**，把上面那个本地备份文件夹同步到 NAS，实现异地容灾。
 
-- 如果使用 NAS，优先把 `$BackupDest` 写成 UNC 路径，例如 `\\192.168.1.10\backup\teaching`。
-- 确认运行定时任务的账户对 NAS 目录有写入权限。
-- 如果 NAS 需要独立凭据，不要使用默认 `SYSTEM`。请在 `register-backup-task.ps1` 中把 `$RunAsUser` 改成有 NAS 权限的 Windows 用户，再注册任务。
-- 映射盘符如 `Z:` 只对创建映射的用户会话可靠，定时任务中不推荐使用。
+第二层在部署时用群晖的图形界面配置（连接地址用 `aigc.i234.me`，DSM 端口 `5001`）。两种工具二选一：
+
+- **Active Backup for Business**：在服务器装代理程序，NAS 端集中管理备份与恢复（推荐）。
+- **Synology Drive Client**：在服务器装客户端，把本地备份文件夹设为同步到 NAS 的某个目录。
+
+> 因为本脚本只写本地文件夹，所以计划任务用默认的 `SYSTEM` 账户即可，无需配置 NAS 账号密码——联网部分由群晖工具用它自己的凭据处理。
 
 ## 恢复位置
 
