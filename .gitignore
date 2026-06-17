@@ -6,6 +6,10 @@ node_modules/
 .env.local
 .env.*.local
 
+# Secret key files (DeepSeek API key etc. — NEVER commit)
+deepseek_api_key.txt
+**/deepseek_api_key.txt
+
 # Database & uploaded files
 main-app/data/teaching_materials.db
 main-app/data/exports/
